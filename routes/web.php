@@ -1,7 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\Login;
 use App\Http\Controllers\Auth\Logout;
 use App\Http\Controllers\Auth\Register;
 use App\Http\Controllers\ChirpController;
@@ -15,6 +15,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/chirps/{chirp}', [ChirpController::class, 'update']);
     Route::delete('/chirps/{chirp}', [ChirpController::class, 'destroy']);
 });
+
+// Login routes
+Route::view('/login', 'auth.login')
+    ->middleware('guest')
+    ->name('login');
+ 
+Route::post('/login', Login::class)
+    ->middleware('guest');
 
 // Registration routes
 Route::view('/register', 'auth.register')

@@ -35,7 +35,7 @@ class ChirpController extends Controller
     public function store(CreateChirpRequest $request)
     {
         // Use the authenticated user
-        auth()->user()->chirps()->create($validated);
+        auth()->user()->chirps()->create($request->toArray());
         return redirect('/')->with('success', 'Chirp created successfully!');
     }
 
