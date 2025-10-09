@@ -2,32 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Chirp;
+use App\Http\Requests\CreateChirpRequest;
 
 class ChirpController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index() {
+    public function index()
+    {
 
-        $chirps = [
-            [
-                'author' => 'Jane Doe',
-                'message' => 'Just deployed my first Laravel app! 🚀',
-                'time' => '5 minutes ago'
-            ],
-            [
-                'author' => 'John Smith',
-                'message' => 'Laravel makes web development fun again!',
-                'time' => '1 hour ago'
-            ],
-            [
-                'author' => 'Alice Johnson',
-                'message' => 'Working on something cool with Chirper...',
-                'time' => '3 hours ago'
-            ]
-        ];
+        $chirps = Chirp::with('user')
+            ->latest()
+            ->take(50)
+            ->get();
 
         return view('home', ['chirps' => $chirps]);
     }
@@ -43,9 +32,11 @@ class ChirpController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateChirpRequest $request)
     {
-        //
+        // Use the authenticated user
+        auth()->user()->chirps()->create($request->toArray());
+        return redirect('/')->with('success', 'Chirp created successfully!');
     }
 
     /**
@@ -59,24 +50,38 @@ class ChirpController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Chirp $chirp)
     {
-        //
+        if ($chirp->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+        
+        return view('chirps.edit', compact('chirp'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateChirpRequest $request, Chirp $chirp)
     {
-        //
+        if ($chirp->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $chirp->update($request->toArray());
+        return redirect('/')->with('success', 'Chirp updated!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Chirp $chirp)
     {
-        //
+        if ($chirp->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $chirp->delete();
+        return redirect('/')->with('success', 'Chirp deleted!');
     }
 }
