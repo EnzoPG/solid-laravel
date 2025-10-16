@@ -7,6 +7,17 @@ use App\Http\Requests\CreateChirpRequest;
 
 class ChirpController extends Controller
 {
+
+    /** 
+     * Validate that the authenticated user is the owner of the chirp.
+     */
+    private function validateUser(Chirp $chirp)
+    {
+        if ($chirp->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -52,10 +63,7 @@ class ChirpController extends Controller
      */
     public function edit(Chirp $chirp)
     {
-        if ($chirp->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-        
+        $this->validateUser($chirp);
         return view('chirps.edit', compact('chirp'));
     }
 
@@ -64,10 +72,7 @@ class ChirpController extends Controller
      */
     public function update(CreateChirpRequest $request, Chirp $chirp)
     {
-        if ($chirp->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
+        $this->validateUser($chirp);
         $chirp->update($request->toArray());
         return redirect('/')->with('success', 'Chirp updated!');
     }
@@ -77,10 +82,7 @@ class ChirpController extends Controller
      */
     public function destroy(Chirp $chirp)
     {
-        if ($chirp->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
+        $this->validateUser($chirp);
         $chirp->delete();
         return redirect('/')->with('success', 'Chirp deleted!');
     }
